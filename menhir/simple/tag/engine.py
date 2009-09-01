@@ -1,31 +1,29 @@
-import lovely.tag
-import interfaces
+# -*- coding: utf-8 -*-
+
 import grok
-import dolmen.app.site.interfaces as di 
-import zope.component as zc
+import lovely.tag
+
+from dolmen.app.site import IDolmen
+from zope.component import getSiteManager
+from zope.app.container.interfaces import IObjectAddedEvent
+
 
 class EngineUtility(grok.LocalUtility):
+    """Tag engine contained in a utility.
     """
-    Tag engine contained in a utility
-    """
-    grok.provides(interfaces.ITaggingEngine)
+    grok.provides(lovely.tag.interfaces.ITaggingEngine)
     
     def __init__(self, *args, **kwargs):
-        super(EngineUtility, self).__init__(*args, **kwargs)
         self._engine = lovely.tag.TaggingEngine()
     
-    # delegate all
     def __getattr__(self, name):
+        # delegate all
         return getattr(self._engine, name)
 
 
-# register this at site creation
-@grok.subscribe(di.IDolmen, grok.IObjectAddedEvent)
+@grok.subscribe(IDolmen, grok.IObjectAddedEvent)
 def register_engine(ob, event):
+    """Register utility (at site creation)
     """
-    register utility (at site creation)
-    """
-    sm = zc.getSiteManager(ob)
-    e = EngineUtility()
-    sm.registerUtility(e, grok.provides.bind().get(e))
-    
+    sm = getSiteManager(ob)
+    sm.registerUtility(EngineUtility(), lovely.tag.interfaces.ITaggingEngine)

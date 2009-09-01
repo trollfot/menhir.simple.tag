@@ -1,30 +1,29 @@
-import dolmen
-import dolmen.content
-import grok
-import zope.app.intid.interfaces as intid_interfaces
-from dolmen.app.layout import master
+# -*- coding: utf-8 -*-
+
 import megrok.z3cform
-import interfaces
-import lovely.tag.interfaces as tag_interfaces
-import zope.component as zc
-import z3c.form 
+import grokcore.viewlet as grok
+
+from zope.schema import TextLine
+from zope.app.intid.interfaces import IIntIds
+from zope.component import getUtility, getMultiAdapter
 from zope.cachedescriptors.property import Lazy
+
+from z3c.form.field import Field, Fields
+from dolmen.content import IBaseContent
+from dolmen.app.layout import master, IDisplayView, Form
+from lovely.tag.interfaces import IUserTagging, ITaggingEngine, ITaggable
+
+grok.context(ITaggable)
 
 
 class TagsViewlet(grok.Viewlet):
-    """
-    
-    TODO : yet all tag have same size use tag cloud when possible
-    
-    """
-    grok.context(dolmen.content.IBaseContent)
-    grok.viewletmanager(master.DolmenAboveBody)
-    grok.require("dolmen.content.View") # FIXME chosse right in dolmen.app.security
+    grok.view(IDisplayView)
+    grok.viewletmanager(master.DolmenTop)
+    grok.require("dolmen.content.View")
     grok.order(100)
     
-    
     def update(self):
-        self.form = zc.getMultiAdapter((self.context, self.request),
+        self.form = getMultiAdapter((self.context, self.request),
                                     name = u'user_tags_add')
         self.form.update()
         self.form.updateForm()
@@ -32,86 +31,80 @@ class TagsViewlet(grok.Viewlet):
         self.context_url = self.view.url(self.context)
         self.actual_url = str(self.request.URL)
         
-            
         try:
             cloudInfo = self.engine.getCloud(items=(self.contextId,))
-        
-            # to know where to put + or -
-            self.user_tags = tag_interfaces.IUserTagging(self.context).tags
-            # FIXME some more thing to do here or see if lovely can already do this
-            # - normalize values
-            # - batch items per line
-            self.cloudInfo = [dict(tag = tag, 
-                                    weight = weight,
-                                    marked = tag in self.user_tags,)
-                        for tag, weight in sorted(cloudInfo, key = lambda i:i[1])]
-
+            self.user_tags = IUserTagging(self.context).tags
+            self.cloudInfo = [{
+                'tag': tag,
+                'weight': weight,
+                'marked': tag in self.user_tags
+                } for tag, weight in cloudInfo]
+ 
         except KeyError:
             self.user_tags = []
             self.cloudInfo = []
     
     @Lazy
     def engine(self):
-        return zc.getUtility(interfaces.ITaggingEngine)
+        return getUtility(ITaggingEngine)
     
     @Lazy
     def contextId(self):
-        intids = zc.getUtility(intid_interfaces.IIntIds)
+        intids = getUtility(IIntIds)
         return intids.getId(self.context)
 
 
-class AddTag(megrok.z3cform.Form):
+class AddTag(Form):
     grok.name('user_tags_add')
-    grok.context(interfaces.IUserTagAdding)
+    prefix = "tags"
+    ignoreContext = True
 
-    fields = z3c.form.field.Fields(interfaces.IUserTagAdding)
-    form_name = u"Add a new tag"
+    fields = Fields(Field(
+        TextLine(title = u'Add tag', required = True),
+        name = "tag"
+        ))
     
     @megrok.z3cform.button.buttonAndHandler(u'Add', name='add')
     def handleAdd(self, action):
         data, errors = self.extractData()
         if errors:
             self.status = self.formErrorsMessage
-        userTagging = tag_interfaces.IUserTagging(self.context)
-        userTagging.tags |= set([data['new_tag'],])
-        
-class CameFromHandling(object):
+        else:
+            userTagging = IUserTagging(self.context)
+            userTagging.tags |= set([data['tag'],])
+            self.flash('Added tag %s' % data['tag'])
+            self.redirect(self.url(self.context))
+
+
+class CameFromView(grok.View):
+    """View handling a came_from parameter
     """
-    view handling a came_from parameter
-    """
+    grok.baseclass()
+    
     def render(self):
-        """
-        Renders redirecting to came_from url
-        """
-        url = self.request.get('came_from',None)
-        if url:
-            self.request.response.redirect(url)
-        else:    
-            return "done"
+        url = self.request.get('came_from', None)
+        if url is None:
+            self.redirect(url)
+        self.redirect(self.url(self.context))
 
             
-class QuickAddTag(CameFromHandling, grok.View):
+class QuickAddTag(CameFromView):
     grok.name('user_tag_quick_add')
-    grok.context(interfaces.IUserTagAdding)
-
-    def update(self):
-        """
-        """
-        tag = self.request.get('tag',None)
-        if tag:
-            userTagging = tag_interfaces.IUserTagging(self.context)
-            userTagging.tags |= set([tag,])
-
-class QuickRemoveTag(CameFromHandling, grok.View):
-    grok.name('user_tag_quick_remove')
-    grok.context(interfaces.IUserTagAdding)
     
     def update(self):
-        """
-        """
+        tag = self.request.get('tag', None)
+        if tag is not None:
+            userTagging = IUserTagging(self.context)
+            userTagging.tags |= set([tag,])
+
+
+class QuickRemoveTag(CameFromView):
+    grok.name('user_tag_quick_remove')
+    
+    def update(self):
         tag = self.request.get('tag',None)
-        if tag:
-            userTagging = tag_interfaces.IUserTagging(self.context)
+        if tag is not None:
+            userTagging = IUserTagging(self.context)
             userTagging.tags -= set([tag,])
     
             

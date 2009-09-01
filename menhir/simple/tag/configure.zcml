@@ -6,7 +6,8 @@
   <include package="grok" file="meta.zcml" />
   <include package="dolmen.app.layout" />
   <include package="dolmen.app.security" />
-  
+  <include package="lovely.tag" />
+
   <grok:grok package="."/>
 <!--  <i18n:registerTranslations directory="locales" /> -->
 

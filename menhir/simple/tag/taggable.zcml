@@ -1,0 +1,7 @@
+<configure xmlns="http://namespaces.zope.org/zope">
+
+  <class class="dolmen.content.base.BaseContent">
+    <implements interface="lovely.tag.interfaces.ITaggable" />
+  </class>
+
+</configure>
