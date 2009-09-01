@@ -83,7 +83,7 @@ class CameFromView(grok.View):
     
     def render(self):
         url = self.request.get('came_from', None)
-        if url is None:
+        if url is not None:
             self.redirect(url)
         self.redirect(self.url(self.context))
 
