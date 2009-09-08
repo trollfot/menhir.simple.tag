@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import megrok.z3cform
 import grokcore.viewlet as grok
+import megrok.z3cform.base as z3cform
 
 from zope.schema import TextLine
 from zope.app.intid.interfaces import IIntIds
@@ -64,7 +64,7 @@ class AddTag(Form):
         name = "tag"
         ))
     
-    @megrok.z3cform.button.buttonAndHandler(u'Add', name='add')
+    @z3cform.button.buttonAndHandler(u'Add', name='add')
     def handleAdd(self, action):
         data, errors = self.extractData()
         if errors:
