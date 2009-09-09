@@ -1,17 +1,16 @@
 # -*- coding: utf-8 -*-
 
 import grokcore.viewlet as grok
-import megrok.z3cform.base as z3cform
 
 from zope.schema import TextLine
 from zope.app.intid.interfaces import IIntIds
-from zope.component import getUtility, getMultiAdapter
 from zope.cachedescriptors.property import Lazy
-
-from z3c.form.field import Field, Fields
-from dolmen.content import IBaseContent
-from dolmen.app.layout import master, IDisplayView, Form
+from zope.component import getUtility, getMultiAdapter
 from lovely.tag.interfaces import IUserTagging, ITaggingEngine, ITaggable
+
+from dolmen.content import IBaseContent
+from dolmen.forms.base import Field, Fields, button
+from dolmen.app.layout import master, IDisplayView, Form
 
 grok.context(ITaggable)
 
@@ -64,7 +63,7 @@ class AddTag(Form):
         name = "tag"
         ))
     
-    @z3cform.button.buttonAndHandler(u'Add', name='add')
+    @button.buttonAndHandler(u'Add', name='add')
     def handleAdd(self, action):
         data, errors = self.extractData()
         if errors:
