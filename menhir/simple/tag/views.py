@@ -1,26 +1,38 @@
 # -*- coding: utf-8 -*-
 
 import grokcore.viewlet as grok
+from grok import subscribe
 import megrok.z3cform.base as z3cform
+from dolmen.forms.base import cancellable
 
 from zope.schema import TextLine
 from zope.app.intid.interfaces import IIntIds
 from zope.component import getUtility, getMultiAdapter
 from zope.cachedescriptors.property import Lazy
+import megrok.resourcelibrary
 
 from z3c.form.field import Field, Fields
 from dolmen.content import IBaseContent
 from dolmen.app.layout import master, IDisplayView, Form
 from lovely.tag.interfaces import IUserTagging, ITaggingEngine, ITaggable
 
+import config
+import events
+
 grok.context(ITaggable)
 
 
-class TagsViewlet(grok.Viewlet):
+
+
+
+class BaseTagsViewlet(object):
     grok.view(IDisplayView)
     grok.viewletmanager(master.DolmenTop)
     grok.require("dolmen.content.View")
     grok.order(100)
+    megrok.resourcelibrary.directory('resources')
+    megrok.resourcelibrary.include('tags.css')
+
     
     def cloud(self):
         return self.engine.cloud(items=(self.contextId,))
@@ -55,27 +67,48 @@ class TagsViewlet(grok.Viewlet):
         intids = getUtility(IIntIds)
         return intids.getId(self.context)
         
-#~ class CachedTagsViewlet(grok.Viewlet):
-    #~ """
-    #~ TagsViewlet caching tag cloud computation result in context
-    #~ 
-    #~ FIXME work in progress
-    #~ """
-    #~ 
-    #~ cache_key = "menhir_simple_tag_viewlet_cache"
-#~ 
-    #~ def cloud(self):
-        #~ if not hasattr(self.context, self.cache_key):
-            #~ setattr(self.context, self.cache_key,
-                    #~ super(self, CachedTagsViewlet).cloud())
-        #~ return getattr(self.context, self.cache_key)
-        #~ 
-    #~ # FIXME needs an event on tag update to remove cache
+if config.CACHE_CLOUD:
+
+    class TagsViewlet(BaseTagsViewlet, grok.Viewlet):
+        """
+        TagsViewlet caching tag cloud computation result in context
+        """
+
+        
+        cache_key = "menhir_simple_tag_viewlet_cache"
+
+        def cloud(self):
+            if not hasattr(self.context, self.cache_key):
+                setattr(self.context, self.cache_key,
+                        super(TagsViewlet, self).cloud())
+            return getattr(self.context, self.cache_key)
+   
+    @subscribe(IBaseContent, events.ITagsModfiedEvent)
+    def _clear_cache_on_tag_update(obj, event):
+        """clear cache if tag modified
+        """
+        if hasattr(obj, TagsViewlet.cache_key):
+            delattr(obj, TagsViewlet.cache_key)
+
+else:
+    
+    class TagsViewlet(BaseTagsViewlet, grok.Viewlet):
+        """
+        TagsViewlet
+        """
+   
+        
+
+
+
+
+
 
 class AddTag(Form):
     grok.name('user_tags_add')
     prefix = "tags"
     ignoreContext = True
+    cancellable(False)
 
     fields = Fields(Field(
         TextLine(title = u'Add tag', required = True),

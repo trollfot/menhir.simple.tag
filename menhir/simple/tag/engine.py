@@ -5,8 +5,27 @@ import lovely.tag
 
 from dolmen.app.site import IDolmen
 from zope.component import getSiteManager
-from zope.app.container.interfaces import IObjectAddedEvent
+import zope.event
+from zope.app.intid.interfaces import IIntIds
 
+import events
+
+
+class TaggingEngine(lovely.tag.TaggingEngine):
+    
+    def update(self, item, user, tags):
+        """
+        fires an event on update
+        """
+        super(TaggingEngine, self).update(item, user, tags)
+        # retrieve object to be abel to fire event
+        intIds = zope.component.getUtility(IIntIds, context=self)
+        obj = intIds.getObject(item)
+        zope.event.notify(events.TagsModifiedEvent(obj, user, tags))
+        
+        
+
+        
 
 class EngineUtility(grok.LocalUtility):
     """Tag engine contained in a utility.
@@ -14,10 +33,10 @@ class EngineUtility(grok.LocalUtility):
     grok.provides(lovely.tag.interfaces.ITaggingEngine)
     
     # make it editable attributes with a form
-    min_tag_size = 0.4
-    max_tag_size = 2
-    base_tag_size = 1 # the size for one tag alone eg.
-    expected_cloud_width = 20 # expected width in em
+    min_tag_size = 0.6
+    max_tag_size = 2.5
+    base_tag_size = 1.5 # the size for one tag alone eg.
+    expected_cloud_width = 15 # expected width in em
     
     def cloud(self, items):
         """
@@ -101,7 +120,7 @@ class EngineUtility(grok.LocalUtility):
     
     
     def __init__(self, *args, **kwargs):
-        self._engine = lovely.tag.TaggingEngine()
+        self._engine = TaggingEngine()
         # put in context
         setattr(self._engine, '__parent__', self)
     
