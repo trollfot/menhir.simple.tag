@@ -39,18 +39,23 @@ class EngineUtility(grok.LocalUtility):
         
         >>> setattr(a, "_engine", dummyEngine())
         >>> a.cloud(0)
-        [('titi', 0.20000000000000001), ('toto', 3.0), ('tata', 1.1333333333333333)]
+        [('titi', 0.20000000000000001), ('toto', 2.5), ('tata', 0.96666666666666656)]
 
         >>> class dummyEngine2(dummyEngine):
         ...     def getCloud(self, items):
         ...         return (("toto", 1),("tata", 1))
         ... 
         >>> setattr(a, "_engine", dummyEngine2())
-        >>> a.cloud(O)        
-        [('toto', 0.5), ('tata', 0.5)]
+        >>> a.cloud(0)        
+        [('toto', 1.0), ('tata', 1.0)]
         
-        FIXME :add test with empty sequence
-        FIXME review result values  as I changed computation
+        >>> class dummyEngine2(dummyEngine):
+        ...     def getCloud(self, items):
+        ...         return ()
+        ... 
+        >>> setattr(a, "_engine", dummyEngine2())
+        >>> a.cloud(0)
+        []
         """
         cloudInfo = self._engine.getCloud(items=items)
         if cloudInfo:
