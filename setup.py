@@ -2,13 +2,13 @@ from setuptools import setup, find_packages
 import os
 
 version = '0.1'
-readme = os.path.join("src", "menhir", "simple", "tag", "README.txt").read()
-history = os.path.join("docs", "HISTORY.txt")).read()
+history = os.path.join("docs", "HISTORY.txt")
+readme = os.path.join("src", "menhir", "simple", "tag", "README.txt")
 
 setup(name='menhir.simple.tag',
       version=version,
       description="",
-      long_description= "%s\n%s" % (readme, history)
+      long_description= "%s\n%s" % (open(readme).read(), open(history).read()),
       classifiers=[
         "Programming Language :: Python",
         "Topic :: Software Development :: Libraries :: Python Modules",
