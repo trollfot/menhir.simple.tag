@@ -1,14 +1,14 @@
 from setuptools import setup, find_packages
 import os
 
-version = '1.0'
+version = '0.1'
+readme = os.path.join("src", "menhir", "simple", "tag", "README.txt").read()
+history = os.path.join("docs", "HISTORY.txt")).read()
 
 setup(name='menhir.simple.tag',
       version=version,
       description="",
-      long_description=open("README.txt").read() + "\n" +
-                       open(os.path.join("docs", "HISTORY.txt")).read(),
-      # Get more strings from http://www.python.org/pypi?%3Aaction=list_classifiers
+      long_description= "%s\n%s" % (readme, history)
       classifiers=[
         "Programming Language :: Python",
         "Topic :: Software Development :: Libraries :: Python Modules",
@@ -18,18 +18,17 @@ setup(name='menhir.simple.tag',
       author_email='',
       url='',
       license='GPL',
-      packages=find_packages(exclude=['ez_setup']),
+      packages=find_packages('src', exclude=['ez_setup']),
+      package_dir={'': 'src'},
       namespace_packages=['menhir', 'menhir.simple'],
       include_package_data=True,
       zip_safe=True,
       install_requires=[
           'setuptools',
-          'lovely.tag',
+          'lovely.tag >= 1.1dev',
           'dolmen.content',
           'dolmen.app.site',
-          # -*- Extra requirements: -*-
-
-      ],
+          ],
       entry_points="""
       # -*- Entry points: -*-
       """,
