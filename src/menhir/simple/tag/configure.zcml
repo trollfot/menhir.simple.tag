@@ -1,0 +1,16 @@
+<configure
+    xmlns="http://namespaces.zope.org/zope"
+    xmlns:grok="http://namespaces.zope.org/grok"
+    xmlns:i18n="http://namespaces.zope.org/i18n">
+
+  <include package="grok" file="meta.zcml" />
+  <include package="megrok.resourcelibrary" file="meta.zcml" />
+
+  <include package="lovely.tag" />
+  <include package="dolmen.app.layout" />
+  <include package="dolmen.app.security" />
+  <include package="zc.resourcelibrary" />
+
+  <grok:grok package="."/>
+
+</configure>

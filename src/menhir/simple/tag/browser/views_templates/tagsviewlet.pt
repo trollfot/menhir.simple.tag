@@ -1,0 +1,22 @@
+<div class="tagger">
+  <fieldset>
+    <legend>Tags</legend>
+    <tal:repeat repeat="info viewlet/cloudInfo">
+      <span 
+	  tal:attributes="style string:font-size:${info/weight}em">
+	<span tal:replace="info/tag">Tag</span>
+	<a  tal:condition="info/marked"
+	    tal:attributes="href string:${viewlet/context_url}/user_tag_quick_remove?tag=${info/tag}&came_from=${viewlet/actual_url}">
+        <sup>-</sup>
+	</a>
+	<a  tal:condition="not:info/marked"
+	    tal:attributes="href string:${viewlet/context_url}/user_tag_quick_add?tag=${info/tag}&came_from=${viewlet/actual_url}">
+	  <sup>+</sup>
+	</a>
+      </span>
+      <span tal:attributes="style string:font-size:${info/weight}em">
+    </span>
+    </tal:repeat>
+    <tal:form content="structure viewlet/form/render" />
+  </fieldset>
+</div>

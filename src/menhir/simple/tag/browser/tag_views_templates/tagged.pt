@@ -1,0 +1,19 @@
+<fieldset>
+  <legend>Related tags</legend>
+    <tal:repeat repeat="item view/related">
+          <a href="#" tal:attributes="href string:./${view/tags}+${item}" 
+              tal:content="item">
+            tagname  
+          </a>
+    </tal:repeat>
+</fieldset>
+<dl>
+  <tal:repeat repeat="item view/items">
+    <dt>
+      <a href="#" tal:attributes="href item/url" 
+          tal:content="item/title">
+        title of object  
+      </a>
+    </dt>
+  </tal:repeat>
+</dl>
