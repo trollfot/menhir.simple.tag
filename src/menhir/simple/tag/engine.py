@@ -215,4 +215,15 @@ class TagTraverser(grok.Traverser):
         Return representation of tag implementing ITag
         """
         
-        return Tags([unicode(t) for t in name.split('+')])
+        return Tags((name,))
+
+class MultiTagTraverser(grok.Traverser):
+    """A nice custom traverser.
+    """
+    grok.context(Tags)
+    
+    def traverse(self, name):
+        """
+        Return representation of tag implementing ITag
+        """
+        return Tags(self.context.values + (name,))

@@ -45,7 +45,8 @@ class Tagged(dolmen.app.layout.Index):
             self.items.append(dict(title = obj.title,
                                     url = self.url(obj)))
         self.related = self.context.related()
-        self.tags = u"+".join(self.context.values)
+        self.tags = ", ".join(self.context.values)
+        self.current = self.context.values[-1]
             
         
         
