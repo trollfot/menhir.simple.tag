@@ -1,9 +1,7 @@
-<fieldset>
-  <legend>Tags</legend>
+  <p>Referenced tags :</p>
     <tal:repeat repeat="item view/items">
           <a href="#" tal:attributes="href string:tags/${item}" 
               tal:content="item">
             tagname  
           </a>
     </tal:repeat>
-</fieldset>

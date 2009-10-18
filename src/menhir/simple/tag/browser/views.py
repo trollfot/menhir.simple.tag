@@ -44,6 +44,7 @@ class TagsViewlet(grok.Viewlet):
         
         self.context_url = self.view.url(self.context)
         self.actual_url = str(self.request.URL)
+        self.engine_url = self.view.url(self.engine)
         
         try:
             self.user_tags = IUserTagging(self.context).tags
@@ -56,6 +57,7 @@ class TagsViewlet(grok.Viewlet):
         except KeyError:
             self.user_tags = []
             self.cloudInfo = []
+            
     
     @Lazy
     def engine(self):

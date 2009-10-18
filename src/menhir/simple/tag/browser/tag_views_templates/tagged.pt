@@ -7,6 +7,7 @@
           </a>
     </tal:repeat>
 </fieldset>
+<p>Results for <em tal:content="view/tags">tagname</em>:</p>
 <dl>
   <tal:repeat repeat="item view/items">
     <dt>

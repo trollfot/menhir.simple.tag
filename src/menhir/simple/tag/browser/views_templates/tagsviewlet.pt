@@ -3,8 +3,13 @@
     <legend>Tags</legend>
     <tal:repeat repeat="info viewlet/cloudInfo">
       <span 
-	  tal:attributes="style string:font-size:${info/weight}em">
-	<span tal:replace="info/tag">Tag</span>
+	  tal:attributes="style string:font-size:${info/weight}em"
+	  class="simpletag">
+	<a  href="#" 
+	    tal:attributes="href string:${viewlet/engine_url}/${info/tag}"
+	    tal:content="info/tag">
+	  Tag
+	</a>
 	<a  tal:condition="info/marked"
 	    tal:attributes="href string:${viewlet/context_url}/user_tag_quick_remove?tag=${info/tag}&came_from=${viewlet/actual_url}">
         <sup>-</sup>
