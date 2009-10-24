@@ -1,13 +1,15 @@
 <fieldset>
   <legend>Related tags</legend>
     <tal:repeat repeat="item view/related">
-          <a href="#" tal:attributes="href string:./${view/current}/${item}" 
-              tal:content="item">
-            tagname  
-          </a>
+      <span class="simpletag">
+        <a href="#" tal:attributes="href string:./${view/current}/${item}" 
+            tal:content="item">
+          tagname  
+        </a>
+      </span>
     </tal:repeat>
 </fieldset>
-<p>Results for <em tal:content="view/tags">tagname</em>:</p>
+<h2>Results for <em tal:content="view/tags">tagname</em>:</h2>
 <dl>
   <tal:repeat repeat="item view/items">
     <dt>

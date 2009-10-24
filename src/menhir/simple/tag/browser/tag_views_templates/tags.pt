@@ -1,7 +1,12 @@
-  <p>Referenced tags :</p>
-    <tal:repeat repeat="item view/items">
-          <a href="#" tal:attributes="href string:tags/${item}" 
-              tal:content="item">
-            tagname  
-          </a>
-    </tal:repeat>
+<p>Referenced tags :</p>
+<tal:repeat repeat="info view/info">
+  
+  <span 
+        tal:attributes="style string:font-size:${info/weight}em"
+        class="simpletag">
+    <a href="#" tal:attributes="href string:tags/${info/tag}" 
+        tal:content="info/tag">
+      tagname  
+    </a>
+  </span>
+</tal:repeat>

@@ -9,7 +9,7 @@ import dolmen.app.layout
 
 from menhir.simple.tag.interfaces import ITags
 import menhir.simple.tag.engine as engine
-
+import views
 
 
 
@@ -23,14 +23,15 @@ class Tags(dolmen.app.layout.Index):
     grok.context(engine.EngineUtility)
     
     def update(self):
-        self.items = self.context.getTags()
+        views.TagResources.need()
+        
+        cloudInfo = self.context.global_cloud()
+        self.info = ({"tag": i[0], "weight": i[1]} for i in cloudInfo)
         
 
 class Tagged(dolmen.app.layout.Index):
     """
     View that list all objects with a certain tag
-    
-    FIXME : I would better have urls like list/tag and list/tag1+tag2 and so on
     """
     grok.context(engine.Tags)
         
@@ -39,6 +40,7 @@ class Tagged(dolmen.app.layout.Index):
         """
         display list using a batch
         """
+        views.TagResources.need()
         objects = self.context.tagged(start = start, size = size)
         self.items = []
         for obj in objects:

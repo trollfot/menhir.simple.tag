@@ -54,6 +54,20 @@ class EngineUtility(grok.Model):
         """Computing of the weights.
         """
         cloudInfo = self._engine.getCloud(items=items)
+        return self._normalized_cloud(cloudInfo)
+        
+    def global_cloud(self):
+        """
+        return the global tag cloud 
+        """
+        cloudInfo = self._engine.getFrequency(self._engine.getTags())
+        return self._normalized_cloud(cloudInfo)
+        
+    def _normalized_cloud(self, cloudInfo):
+        """
+        lovely tag send us info on frequency we have to scale it
+        to have a representation
+        """
         if cloudInfo:
             # we do not always user min and max, we use those values
             # only if difference between tags is big enough
@@ -101,6 +115,7 @@ class EngineUtility(grok.Model):
         else:
             cloud = []
         return cloud
+
         
     @Lazy
     def intids(self):
