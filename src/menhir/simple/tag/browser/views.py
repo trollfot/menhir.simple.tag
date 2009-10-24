@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import megrok.resourcelibrary
+
 import grokcore.viewlet as grok
 
 from grok import subscribe
@@ -23,10 +24,61 @@ class TagResources(megrok.resourcelibrary.ResourceLibrary):
     grok.name("tag.styles")
     megrok.resourcelibrary.directory('resources')
     megrok.resourcelibrary.include('tags.css')
+    
+import menhir.simple.livesearch.base
+class TagLiveSearchLibrary(megrok.resourcelibrary.ResourceLibrary):
+    grok.name("tag.livesearch")
+    megrok.resourcelibrary.directory('resources')
+    megrok.resourcelibrary.depend(
+                menhir.simple.livesearch.base.LiveSearchLibrary)
+    
+
+from dolmen.app.layout.master import DolmenHeader
+
+class TagLiveSearch(grok.Viewlet):
+    grok.name('tag.livesearch')
+    grok.viewletmanager(DolmenHeader)
+
+    def render(self):
+        return u"""
+        <script>
+        $(document).ready(function(){
+          $('#tags-widgets-tag').liveSearch({
+             ajaxURL: '%s/tag-search?search_term='
+           });
+        });
+        </script>
+        """ % self.view.url(self.context)
+        
+    def update(self):
+        TagLiveSearchLibrary.need()
+    
+
+class TagSearchResults(grok.View):
+    grok.name("tag-search")
+    
+    @Lazy
+    def engine(self):
+        return getUtility(ITaggingEngine)
+    
+    def update(self, search_term):
+        """
+        search for tags to suggest
+        """
+        user_tags = IUserTagging(self.context).tags
+        if search_term:
+            # TODO is there a better way for filtering than asking all tags ?
+            self.items = (tag for tag in self.engine.getTags() 
+                                if  tag.startswith(search_term)
+                                    and not tag in user_tags)
+        else:
+            self.items = []
+        self.context_url = self.url(self.context)
+        self.actual_url = str(self.request.URL)
+    
 
 
 class TagsViewlet(grok.Viewlet):
-    #grok.baseclass()
     grok.view(IDisplayView)
     grok.viewletmanager(master.DolmenTop)
     grok.require("dolmen.content.View")

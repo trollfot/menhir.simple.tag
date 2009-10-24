@@ -1,0 +1,8 @@
+<dl class="tag-search-results" tal:condition="view/items">
+  <dt tal:repeat="tag view/items">
+    <a tal:attributes="title string:Add $tag tag;
+        href string:${view/context_url}/user_tag_quick_add?tag=${tag}&came_from=${view/actual_url}">
+      <span tal:replace="tag" />
+    </a>
+  </dt>
+</dl>
