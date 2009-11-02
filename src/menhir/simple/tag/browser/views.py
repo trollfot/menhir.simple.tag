@@ -34,11 +34,11 @@ try:
                     menhir.simple.livesearch.base.LiveSearchLibrary)
         
 
-    from dolmen.app.layout.master import DolmenHeader
+    from dolmen.app.layout.master import Header
 
     class TagLiveSearch(grok.Viewlet):
         grok.name('tag.livesearch')
-        grok.viewletmanager(DolmenHeader)
+        grok.viewletmanager(Header)
 
         def render(self):
             return u"""
@@ -83,7 +83,7 @@ except ImportError:
 
 class TagsViewlet(grok.Viewlet):
     grok.view(IDisplayView)
-    grok.viewletmanager(master.DolmenTop)
+    grok.viewletmanager(master.Top)
     grok.require("dolmen.content.View")
     grok.order(100)
     
