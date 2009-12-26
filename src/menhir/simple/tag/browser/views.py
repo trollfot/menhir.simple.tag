@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import megrok.resourcelibrary
-
 import grokcore.viewlet as grok
 
 from grok import subscribe
+from megrok import resource
+
 from zope.event import notify
 from zope.schema import TextLine
 from zope.app.intid.interfaces import IIntIds
@@ -20,20 +20,12 @@ from lovely.tag.interfaces import IUserTagging, ITaggingEngine, ITaggable
 grok.context(ITaggable)
 
 
-class TagResources(megrok.resourcelibrary.ResourceLibrary):
-    grok.name("tag.styles")
-    megrok.resourcelibrary.directory('resources')
-    megrok.resourcelibrary.include('tags.css')
+class TagResources(resource.ResourceLibrary):
+    resource.path('resources')
+    resource.resource('tags.css')
 
 try:
-    import menhir.simple.livesearch.base
-    class TagLiveSearchLibrary(megrok.resourcelibrary.ResourceLibrary):
-        grok.name("tag.livesearch")
-        megrok.resourcelibrary.directory('resources')
-        megrok.resourcelibrary.depend(
-                    menhir.simple.livesearch.base.LiveSearchLibrary)
-        
-
+    import menhir.simple.livesearch
     from dolmen.app.layout.master import Header
 
     class TagLiveSearch(grok.Viewlet):
@@ -52,7 +44,7 @@ try:
             """ % self.view.url(self.context)
             
         def update(self):
-            TagLiveSearchLibrary.need()
+            menhir.simple.livesearch.LiveSearchResources.need()
         
 
     class TagSearchResults(grok.View):
