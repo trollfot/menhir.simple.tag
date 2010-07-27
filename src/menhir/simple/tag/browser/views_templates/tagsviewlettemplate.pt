@@ -1,0 +1,86 @@
+<div class="tagger">
+  <fieldset>
+    <legend>Tags</legend>
+    <tal:repeat repeat="info viewlet/cloudInfo">
+      <span 
+	  tal:attributes="style string:font-size:${info/weight}em"
+	  class="simpletag">
+	<a  href="#" 
+	    tal:attributes="href string:${viewlet/engine_url}/${info/tag}"
+	    tal:content="info/tag">
+	  Tag
+	</a>
+	<a  tal:condition="info/marked"
+	    tal:attributes="href string:${viewlet/context_url}/user_tag_quick_remove?tag=${info/tag}&came_from=${viewlet/actual_url}">
+        <sup>-</sup>
+	</a>
+	<a  tal:condition="not:info/marked"
+	    tal:attributes="href string:${viewlet/context_url}/user_tag_quick_add?tag=${info/tag}&came_from=${viewlet/actual_url}">
+	  <sup>+</sup>
+	</a>
+      </span>
+      <span tal:attributes="style string:font-size:${info/weight}em">
+    </span>
+    </tal:repeat>
+
+    <form action="." tal:attributes="action request/URL" method="post"
+	  enctype="multipart/form-data">
+      
+      <h2 tal:condition="viewlet/label"
+	  tal:content="viewlet/label">Label</h2>
+      
+      <p tal:condition="viewlet/description"
+	 tal:content="viewlet/description">Description</p>
+      
+      <p class="form-status"
+	 tal:condition="viewlet/status"
+	 tal:content="viewlet/status">Status</p>
+      
+      <p class="form-error"
+	 tal:condition="viewlet/errors">
+	There were errors:
+	<tal:error tal:define="formError viewlet/submissionError"
+		   tal:condition="formError">
+	  <br />
+	  <span tal:replace="formError/title" />
+	</tal:error>
+      </p>
+      
+      <div class="fields"
+       tal:condition="viewlet/fieldWidgets">
+	<div class="field" tal:repeat="widget viewlet/fieldWidgets">
+	  <label class="field-label" for="#"
+		 tal:attributes="for widget/htmlId"
+		 tal:content="widget/title">
+	    Label
+	  </label>
+	  <span class="field-required"
+		tal:condition="widget/required">(required)</span>
+	  <br />
+	  <tal:description tal:condition="widget/description">
+	    <span class="field-description"
+		  tal:content="widget/description">
+        </span><br />
+	  </tal:description>
+	  <tal:error tal:define="error widget/error"
+		     tal:condition="error">
+	    <span class="field-error"
+		  tal:content="error/title">
+	      Error
+	    </span>
+	    <br />
+	  </tal:error>
+	  <tal:widget tal:content="structure widget/render" />
+	</div>
+      </div>
+      
+      <div class="actions"
+	   tal:condition="viewlet/actionWidgets">
+	<div class="action" tal:repeat="widget viewlet/actionWidgets">
+	  <tal:widget tal:content="structure widget/render" />
+	</div>
+      </div>
+    </form>
+
+  </fieldset>
+</div>

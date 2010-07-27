@@ -4,17 +4,22 @@ import grokcore.viewlet as grok
 
 from grok import subscribe
 from megrok import resource
-
+from megrok import pagetemplate as pt
 from zope.event import notify
 from zope.schema import TextLine
-from zope.app.intid.interfaces import IIntIds
+from zope.intid.interfaces import IIntIds
 from zope.component import getUtility, getMultiAdapter
 from zope.cachedescriptors.property import Lazy
 from zope.lifecycleevent import Attributes, ObjectModifiedEvent
+from zeam.form import base
+from dolmen.forms.crud import actions as formactions
+from zeam.form.base.interfaces import IField
+from zeam.form.viewlet import ViewletForm
+from zeam.form.base.interfaces import IDataManager
 
 from dolmen.content import IBaseContent
 from dolmen.app.layout import master, IDisplayView, Form
-from dolmen.forms.base import cancellable, button, Fields, Field
+from dolmen.forms.base import Fields, Actions, SUCCESS, FAILURE
 from lovely.tag.interfaces import IUserTagging, ITaggingEngine, ITaggable
 
 grok.context(ITaggable)
@@ -54,13 +59,14 @@ try:
         def engine(self):
             return getUtility(ITaggingEngine)
         
-        def update(self, search_term):
+        def update(self, search_term=None):
             """
             search for tags to suggest
             """
-            user_tags = IUserTagging(self.context).tags
             if search_term:
-                # TODO is there a better way for filtering than asking all tags ?
+                user_tags = IUserTagging(self.context).tags
+                # TODO is there a better way for filtering
+                # than asking all tags ?
                 self.items = (tag for tag in self.engine.getTags() 
                                     if  tag.startswith(search_term)
                                         and not tag in user_tags)
@@ -73,21 +79,68 @@ except ImportError:
     # FIXME do some log here to say we wont have live search
     pass
 
-class TagsViewlet(grok.Viewlet):
+
+class AddTag(base.Action):
+
+    def __call__(self, form):
+        data, errors = form.extractData()
+        if errors:
+            form.submissionError = errors
+            return FAILURE
+
+        content = form.getContentData()
+        if IDataManager.providedBy(content):
+            content = content.content
+        
+        userTagging = IUserTagging(content)
+        userTagging.tags |= set([data['tag'],])
+        notify(ObjectModifiedEvent(content))
+        form.flash('Added tag %s' % data['tag'])
+        form.redirect(form.url(content))
+
+        return SUCCESS
+
+
+class TagAddForm(Form):
+    grok.name('user_tags_add')
+
+    prefix = "tags"
+
+    ignoreContent = True
+    submissionError = None
+
+    fields = Fields(IField(
+        TextLine(__name__="tag", title = u'Add tag', required = True)))
+
+    actions = Actions(
+        AddTag('Add'), formactions.CancelAction("Cancel"))
+
+
+class TagsViewlet(ViewletForm):
     grok.view(IDisplayView)
     grok.viewletmanager(master.Top)
     grok.require("dolmen.content.View")
     grok.order(100)
-    
+
+    prefix = "tags"
+    ignoreContent = True
+    submissionError = None
+
+    fields = Fields(IField(
+        TextLine(__name__="tag", title = u'Add tag', required = True)))
+
+    actions = Actions(AddTag('Add'))
+
+    @property
+    def flash(self):
+        return self.view.flash
+
     def cloud(self):
         return self.engine.cloud(items=(self.contextId,))
-    
+
     def update(self):
         TagResources.need()
-        self.form = getMultiAdapter((self.context, self.request),
-                                    name = u'user_tags_add')
-        self.form.update()
-        self.form.updateForm()
+        ViewletForm.update(self)
         
         self.context_url = self.view.url(self.context)
         self.actual_url = str(self.request.URL)
@@ -104,59 +157,36 @@ class TagsViewlet(grok.Viewlet):
         except KeyError:
             self.user_tags = []
             self.cloudInfo = []
-            
-    
+
     @Lazy
     def engine(self):
         return getUtility(ITaggingEngine)
-    
+
     @Lazy
     def contextId(self):
         intids = getUtility(IIntIds)
         return intids.getId(self.context)
 
-          
-class AddTag(Form):
-    grok.name('user_tags_add')
-    prefix = "tags"
-    ignoreContext = True
-    cancellable(False)
 
-    fields = Fields(Field(
-        TextLine(title = u'Add tag', required = True),
-        name = "tag"
-        ))
-    
-    @button.buttonAndHandler(u'Add', name='add')
-    def handleAdd(self, action):
-        data, errors = self.extractData()
-        if errors:
-            self.status = self.formErrorsMessage
-        else:
-            userTagging = IUserTagging(self.context)
-            userTagging.tags |= set([data['tag'],])
-            notify(ObjectModifiedEvent(self.context))
-            self.flash('Added tag %s' % data['tag'])
-            self.redirect(self.url(self.context))
+class TagsViewletTemplate(pt.PageTemplate):
+    pt.view(TagsViewlet)
 
 
 class CameFromView(grok.View):
     """View handling a came_from parameter
     """
     grok.baseclass()
-    
-    def render(self):
-        url = self.request.get('came_from', None)
-        if url is not None:
-            self.redirect(url)
+
+    def render(self, came_from=None):
+        if came_from is not None:
+            self.redirect(came_from)
         self.redirect(self.url(self.context))
 
-            
+
 class QuickAddTag(CameFromView):
     grok.name('user_tag_quick_add')
-    
-    def update(self):
-        tag = self.request.get('tag', None)
+
+    def update(self, tag=None):
         if tag is not None:
             userTagging = IUserTagging(self.context)
             userTagging.tags |= set([tag,])
@@ -164,11 +194,8 @@ class QuickAddTag(CameFromView):
 
 class QuickRemoveTag(CameFromView):
     grok.name('user_tag_quick_remove')
-    
-    def update(self):
-        tag = self.request.get('tag',None)
+
+    def update(self, tag=None):
         if tag is not None:
             userTagging = IUserTagging(self.context)
             userTagging.tags -= set([tag,])
-    
-            

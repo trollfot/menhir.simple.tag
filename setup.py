@@ -28,6 +28,7 @@ setup(name='menhir.simple.tag',
           'lovely.tag >= 1.1dev',
           'dolmen.content',
           'dolmen.app.site',
+          'zeam.form.viewlet',
           ],
       entry_points="""
       # -*- Entry points: -*-

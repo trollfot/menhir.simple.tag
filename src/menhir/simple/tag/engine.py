@@ -5,10 +5,11 @@ import zope.event
 import lovely.tag
 
 from dolmen.app.site import IDolmen
-from menhir.simple.tag import events
+from menhir.simple.tag import events, interfaces 
 from zope.component import getSiteManager, getUtility
 from zope.app.intid.interfaces import IIntIds
 from zope.cachedescriptors.property import Lazy
+from lovely.tag.interfaces import ITaggingEngine
 
 try:
     from z3c.batching.batch import Batch
@@ -16,6 +17,9 @@ except ImportError:
     # batch that does nothing
     Batch = lambda x, *args: x 
 
+
+class ITaggingEngine(ITaggingEngine):
+    pass
 
 
 class TaggingEngine(lovely.tag.TaggingEngine):
@@ -33,7 +37,7 @@ class TaggingEngine(lovely.tag.TaggingEngine):
 class EngineUtility(grok.Model):
     """Tag engine.
     """
-    grok.provides(lovely.tag.interfaces.ITaggingEngine)
+    grok.provides(ITaggingEngine)
     
     # make it editable attributes with a form
     min_tag_size = 0.6
@@ -122,7 +126,6 @@ class EngineUtility(grok.Model):
         """return intids utility"""
         return getUtility(IIntIds)
 
-
     @Lazy
     def getId(self):
         """
@@ -159,22 +162,17 @@ def register_engine(site, event):
     sm.registerUtility(engine, lovely.tag.interfaces.ITaggingEngine)
 
 
-        
-
-import interfaces
-
 class Tags(grok.Model):
     """a class representing on or more tags""" 
     grok.provides(interfaces.ITags)
-    
+
     def __init__(self, values):
         self.values = tuple(values)
-    
+
     @Lazy
     def engine(self):
         return getUtility(lovely.tag.interfaces.ITaggingEngine)
-    
-        
+
     def tagged(self, size = None, start = 0):
         """
         All ids of elements with this tag
@@ -201,9 +199,8 @@ class Tags(grok.Model):
         """
         engine = self.engine
         return intersect_sets(engine.getRelatedTags(v) for v in self.values)
-            
-        
-        
+
+
 def intersect_sets(sets):
     """
     return intersection of all sets
@@ -216,8 +213,6 @@ def intersect_sets(sets):
     except StopIteration:
         pass
     return result
-        
-    
 
 
 class TagTraverser(grok.Traverser):
@@ -226,11 +221,10 @@ class TagTraverser(grok.Traverser):
     grok.context(EngineUtility)
     
     def traverse(self, name):
+        """Returns representation of tag implementing ITag
         """
-        Return representation of tag implementing ITag
-        """
-        
         return Tags((name,))
+
 
 class MultiTagTraverser(grok.Traverser):
     """A nice custom traverser.
@@ -238,7 +232,6 @@ class MultiTagTraverser(grok.Traverser):
     grok.context(Tags)
     
     def traverse(self, name):
-        """
-        Return representation of tag implementing ITag
+        """Returns representation of tag implementing ITag
         """
         return Tags(self.context.values + (name,))
