@@ -2,32 +2,34 @@
 
 import grokcore.viewlet as grok
 
-from grok import subscribe
-from megrok import resource
-from megrok import pagetemplate as pt
-from zope.event import notify
-from zope.schema import TextLine
-from zope.intid.interfaces import IIntIds
-from zope.component import getUtility, getMultiAdapter
-from zope.cachedescriptors.property import Lazy
-from zope.lifecycleevent import Attributes, ObjectModifiedEvent
-from zeam.form import base
+from dolmen.app.layout import master, IDisplayView, Form
+from dolmen.content import IBaseContent
+from dolmen.forms.base import Fields, Actions, SUCCESS, FAILURE
 from dolmen.forms.crud import actions as formactions
+
+from grok import subscribe
+from fanstatic import Library, Resource
+from megrok import pagetemplate as p
+
+from zeam.form import base
+from zeam.form.base.interfaces import IDataManager
 from zeam.form.base.interfaces import IField
 from zeam.form.viewlet import ViewletForm
-from zeam.form.base.interfaces import IDataManager
 
-from dolmen.content import IBaseContent
-from dolmen.app.layout import master, IDisplayView, Form
-from dolmen.forms.base import Fields, Actions, SUCCESS, FAILURE
+from zope.cachedescriptors.property import Lazy
+from zope.component import getUtility, getMultiAdapter
+from zope.event import notify
+from zope.intid.interfaces import IIntIds
+from zope.lifecycleevent import Attributes, ObjectModifiedEvent
+from zope.schema import TextLine
+
 from lovely.tag.interfaces import IUserTagging, ITaggingEngine, ITaggable
 
 grok.context(ITaggable)
 
 
-class TagResources(resource.ResourceLibrary):
-    resource.path('resources')
-    resource.resource('tags.css')
+TagResources = Library('tag_styles', 'resources')
+TagStyles = Resource(TagResources, 'tags.css')
 
 try:
     import menhir.simple.livesearch
@@ -139,7 +141,7 @@ class TagsViewlet(ViewletForm):
         return self.engine.cloud(items=(self.contextId,))
 
     def update(self):
-        TagResources.need()
+        TagStyles.need()
         ViewletForm.update(self)
         
         self.context_url = self.view.url(self.context)

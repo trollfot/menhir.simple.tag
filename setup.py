@@ -24,13 +24,18 @@ setup(name='menhir.simple.tag',
       include_package_data=True,
       zip_safe=True,
       install_requires=[
-          'setuptools',
-          'lovely.tag >= 1.1dev',
-          'dolmen.content',
+          'dolmen.app.layout',
+          'dolmen.app.security',
           'dolmen.app.site',
+          'dolmen.content',
+          'fanstatic',
+          'lovely.tag >= 1.1dev',
+          'setuptools',
           'zeam.form.viewlet',
           ],
       entry_points="""
       # -*- Entry points: -*-
+      [fanstatic.libraries]
+      tag_resources = menhir.simple.tag.browser:TagResources
       """,
       )
