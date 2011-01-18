@@ -121,7 +121,7 @@ class TagAddForm(Form):
 class TagsViewlet(ViewletForm):
     grok.view(IDisplayView)
     grok.viewletmanager(master.Top)
-    grok.require("dolmen.content.View")
+    grok.require("dolmen.content.Edit")
     grok.order(100)
 
     prefix = "tags"
