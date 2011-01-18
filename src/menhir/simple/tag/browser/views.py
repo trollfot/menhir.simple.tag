@@ -9,7 +9,7 @@ from dolmen.forms.crud import actions as formactions
 
 from grok import subscribe
 from fanstatic import Library, Resource
-from megrok import pagetemplate as p
+from megrok import pagetemplate as pt
 
 from zeam.form import base
 from zeam.form.base.interfaces import IDataManager
