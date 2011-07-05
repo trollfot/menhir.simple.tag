@@ -3,7 +3,7 @@
 import grokcore.viewlet as grok
 
 from dolmen.app.layout import master, IDisplayView, Form
-from dolmen.content import IBaseContent
+from dolmen.content import IContent
 from dolmen.forms.base import Fields, Actions, SUCCESS, FAILURE
 from dolmen.forms.crud import actions as formactions
 
@@ -22,6 +22,7 @@ from zope.event import notify
 from zope.intid.interfaces import IIntIds
 from zope.lifecycleevent import Attributes, ObjectModifiedEvent
 from zope.schema import TextLine
+from zope.interface import Interface
 
 from lovely.tag.interfaces import IUserTagging, ITaggingEngine, ITaggable
 
@@ -103,6 +104,12 @@ class AddTag(base.Action):
         return SUCCESS
 
 
+class ITagger(Interface):
+    tag = TextLine(
+        title=u'Add tag',
+        required=True)
+
+
 class TagAddForm(Form):
     grok.name('user_tags_add')
 
@@ -111,9 +118,7 @@ class TagAddForm(Form):
     ignoreContent = True
     submissionError = None
 
-    fields = Fields(IField(
-        TextLine(__name__="tag", title = u'Add tag', required = True)))
-
+    fields = Fields(ITagger)
     actions = Actions(
         AddTag('Add'), formactions.CancelAction("Cancel"))
 
@@ -128,9 +133,7 @@ class TagsViewlet(ViewletForm):
     ignoreContent = True
     submissionError = None
 
-    fields = Fields(IField(
-        TextLine(__name__="tag", title = u'Add tag', required = True)))
-
+    fields = Fields(ITagger)
     actions = Actions(AddTag('Add'))
 
     @property
